@@ -57,7 +57,7 @@ fi
 ## then exclude those directories.
 ## If no files were listed, then exit with a message
 ls -p "$IN_DIR" | grep -v "/$" > /dev/null
-if [ "$?" -z ] ; then
+if [ "$?" ] ; then
   echo "$(date -u): No new files found in $IN_DIR"
   exit 0
 fi
