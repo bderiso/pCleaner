@@ -6,9 +6,6 @@ set -e
 # Debug Mode
 #set -x
 
-# Set the Internal File Separator to newlines only
-IFS=$'\n'
-
 # Check dependecies & install if needed
 if [ ! -z $(command -v faad) ];
  then echo;
@@ -52,18 +49,28 @@ fi
 
 # Check if this script is running on MacOS, and if so then clean up the Input Directory 
 if [ $(uname -s) = Darwin ]; then
-  find "$IN_DIR" -name ".DS_Store" -delete
+  find "$IN_DIR" -type f -name "/.DS_Store" -delete
 fi
 
 # Check if any new files have been downloaded; if zero then exit
-if [ -z $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print -quit) ]; then
+## List the directory and makes sure to append '/' to nested directories in the list
+## then exclude those directories.
+## If no files were listed, then exit with a message
+ls -p "$IN_DIR" | grep -v "/$" > /dev/null
+if [ "$?" -z ] ; then
   echo "$(date -u): No new files found in $IN_DIR"
   exit 0
 fi
 
-# Find the first file in the input directory & send it through the audio processing then loop/repeat until no files are found
-for INFILE in $(find "$IN_DIR" -path "$IN_DIR"/archive -prune -o -type f -print); do
-  
+# Send files within the input directory through the audio processing 
+# then loop until the list is finished
+for INFILE in $IN_DIR/* ; do
+
+  # Skip directories
+  if [ -d "$INFILE" ]; then
+  continue  
+  fi
+
   # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
   # If the file is M4A, it will be converted to WAV using faad and then restart the script
   INFILE_FORMAT=$(printf "${INFILE##*.}")
