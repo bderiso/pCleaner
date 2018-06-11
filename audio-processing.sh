@@ -56,8 +56,8 @@ fi
 ## List the directory and makes sure to append '/' to nested directories in the list
 ## then exclude those directories.
 ## If no files were listed, then exit with a message
-ls -p "$IN_DIR" | grep -v "/$" > /dev/null
-if [ "$?" ] ; then
+if ls -p $IN_DIR | egrep -v /$ > /dev/null; then : nothing; 
+else
   echo "$(date -u): No new files found in $IN_DIR"
   exit 0
 fi
