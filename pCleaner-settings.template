@@ -1,22 +1,34 @@
 # Note: By default, this file uses the "Typical  values" from the SoX(1) man page
 # This is not the same as the automated settings used in the commercial version of pCleaner
 
-#EQ HighPass & LowPass
+#EQ HighPass & LowPass (Hz)
 HP=20
 LP=20k
 
-# Compressor Attack, Decay
+# Compressor Attack, Decay (seconds)
 AD="0.3,0.8"
 
-# Compressor Knee
+# Compressor Knee (dB)
 K=6
 
-# Compressor Floor
+# Compressor Floor (dBFS)
 F=-70
 
-# Compressor Threshold
+# Compressor Threshold (dBFS)
 T=-60
 
-# Compressor Ratio
+# Compressor Ratio Denominator (dBFS) 
 R=-20
 
+# Output Peak Target (dBFS)
+O=-2
+
+# Multiband Crossover Frequencies (Hz)
+# Bass
+X1=160
+
+# Midrange
+X2=1000
+
+# Treble
+X3=8000

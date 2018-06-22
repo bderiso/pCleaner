@@ -92,7 +92,7 @@ for INFILE in $IN_DIR/* ; do
 
   # This is where the magic happens
   source ~/pCleaner-settings
-  "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R -6 $F" 160 "$AD $K:$T,$R -6 $F" 1000 "$AD $K:$T,$R -6 $F" 8000 "$AD $K:$T,$R -6 $F" gain -n -2
+  "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R -6 $F" "$X1" "$AD $K:$T,$R -6 $F" "$X2" "$AD $K:$T,$R -6 $F" "$X3" "$AD $K:$T,$R -6 $F" gain -n "$O"
   done
 
   # Prevent future runs against the same file by moving out of the way
@@ -103,5 +103,3 @@ for INFILE in $IN_DIR/* ; do
   fi
 
 done
-
-unset IFS
