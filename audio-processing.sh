@@ -27,7 +27,7 @@ SOX=$(command -v sox)
 # Input directory
 IN_DIR=~/pCleaner-Input
 # Output directory
-OUT_DIR=~/pCleaner-Output
+#OUT_DIR=~/pCleaner-Output
 # Audio Settings
 FX=~/pCleaner-settings
 
@@ -37,10 +37,10 @@ if [ ! -e "$IN_DIR" ]; then
   mkdir -p "$IN_DIR"
 fi
 
-if [ ! -e "$OUT_DIR" ]; then
-  echo "Creating the output directory: $OUT_DIR"
-  mkdir -p "$OUT_DIR"
-fi
+#if [ ! -e "$OUT_DIR" ]; then
+#  echo "Creating the output directory: $OUT_DIR"
+#  mkdir -p "$OUT_DIR"
+#fi
 
 if [ ! -e "$FX" ]; then
   echo "Generating the audio settings file: $FX"
@@ -64,48 +64,44 @@ fi
 
 # Send files within the input directory through the audio processing 
 # then loop until the list is finished
-for INFILE in $IN_DIR/* ; do
+for INFILE in "$IN_DIR"/*; do
 
-  # Skip directories
-  if [ -d "$INFILE" ]; then
-  continue  
-  fi
+#  # Skip directories
+  if [ -f "$INFILE" ]; then  
 
-  # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
-  # If the file is M4A, it will be converted to WAV using faad and then restart the script
-  INFILE_FORMAT=$(printf "${INFILE##*.}")
-  if [ "$INFILE_FORMAT" = m4a ]; then
-    echo "Unsupported format: m4a. File will be converted."
-    "$FAAD" -q "$INFILE"
+    # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
+    # If the file is M4A, it will be converted to WAV using faad and then restart the script
+    INFILE_FORMAT=$(printf "${INFILE##*.}")
+    if [ "$INFILE_FORMAT" = m4a ]; then
+      echo "Unsupported format: m4a. File will be converted."
+      "$FAAD" -q "$INFILE"
+      rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
+      exec "$0"
+    fi
+  
+    OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
+  
+    # Automatic handling of output formats from a space delimited list
+    OUTFILE_FORMAT_LIST='mp3'
+    for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
+      OUTFILE="$OUTFILE_NAME"."$OUTFILE_FORMAT"
+  
+      echo "$(date -u):"
+    
+      # This is where the magic happens
+      source ~/pCleaner-settings
+    
+      "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" --comment "$G" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R X1G $F" "$X1" "$AD $K:$T,$R $X1G $F" "$X2" "$AD $K:$T,$R $X2G $F" "$X3" "$AD $K:$T,$R $X3G $F" gain -n "$O"
+    
+    done
+  
+    # Prevent future runs against the same file by moving out of the way
     rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
-    exec "$0"
-  fi
+  
+    if [ -e ./feed-processing.sh ]; then
+      ./feed-processing.sh
+    fi
 
-  OUTFILE_NAME=$(printf "$INFILE" | awk -F/ '{print $NF}' | cut -d "." -f 1)
-
-  # Automatic handling of output formats from a space delimited list
-  OUTFILE_FORMAT_LIST='mp3'
-  for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
-    OUTFILE="$OUT_DIR"/"$OUTFILE_NAME"."$OUTFILE_FORMAT"
-
-  echo "$(date -u):"
-
-  # This is where the magic happens
-  source ~/pCleaner-settings
-
-
-
-
-
-  "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" --comment "$G" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R X1G $F" "$X1" "$AD $K:$T,$R $X1G $F" "$X2" "$AD $K:$T,$R $X2G $F" "$X3" "$AD $K:$T,$R $X3G $F" gain -n "$O"
-
-  done
-
-  # Prevent future runs against the same file by moving out of the way
-  rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
-
-  if [ -e ./feed-processing.sh ]; then
-    ./feed-processing.sh
   fi
 
 done
