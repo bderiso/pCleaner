@@ -4,7 +4,7 @@
 #set -e
 
 # Debug Mode
-set -x
+#set -x
 
 # Check dependecies & install if needed
 if [ ! -z $(command -v faad) ];
