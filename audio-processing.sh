@@ -61,6 +61,7 @@ fi
 
 # Send files within the input directory through the audio processing 
 # then loop until the list is finished
+
   find "$IN_DIR"/ -type f ! -name "*.tmp" | while IFS=$'\n' read -r INFILE; do
 
     # Check if the file has been processed before
