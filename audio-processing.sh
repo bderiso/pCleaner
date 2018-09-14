@@ -37,11 +37,6 @@ if [ ! -e "$IN_DIR" ]; then
   mkdir -p "$IN_DIR"
 fi
 
-#if [ ! -e "$OUT_DIR" ]; then
-#  echo "Creating the output directory: $OUT_DIR"
-#  mkdir -p "$OUT_DIR"
-#fi
-
 if [ ! -e "$FX" ]; then
   echo "Generating the audio settings file: $FX"
   cp ./pCleaner-settings.template "$FX"
@@ -64,11 +59,7 @@ fi
 
 # Send files within the input directory through the audio processing 
 # then loop until the list is finished
-#for INFILE in "$IN_DIR"/**; do
 find "$IN_DIR"/ -type f | while IFS=$'\n' read -r INFILE; do
-
-#  # Skip directories
-#  if [ -f "$INFILE" ]; then  
 
     # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
     # If the file is M4A, it will be converted to WAV using faad and then restart the script
@@ -96,12 +87,11 @@ find "$IN_DIR"/ -type f | while IFS=$'\n' read -r INFILE; do
     
     done
   
-    # Prevent future runs against the same file by moving out of the way
+    # Prevent future runs against the same file
 #    rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
   
     if [ -e ./feed-processing.sh ]; then
       ./feed-processing.sh
     fi
 
-#  fi
 done
