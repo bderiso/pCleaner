@@ -97,7 +97,7 @@ find "$IN_DIR"/ -type f | while IFS=$'\n' read -r INFILE; do
     done
   
     # Prevent future runs against the same file by moving out of the way
-    rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
+#    rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
   
     if [ -e ./feed-processing.sh ]; then
       ./feed-processing.sh
