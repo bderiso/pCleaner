@@ -92,7 +92,7 @@ find "$IN_DIR"/ -type f | while IFS=$'\n' read -r INFILE; do
       # This is where the magic happens
       source ~/pCleaner-settings
     
-      "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" --comment "$G" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R X1G $F" "$X1" "$AD $K:$T,$R $X1G $F" "$X2" "$AD $K:$T,$R $X2G $F" "$X3" "$AD $K:$T,$R $X3G $F" gain -n "$O"
+      "$SOX" -V --no-clobber -t "$INFILE_FORMAT" "$INFILE" --comment "$G" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R $X1G $F" "$X1" "$AD $K:$T,$R $X1G $F" "$X2" "$AD $K:$T,$R $X2G $F" "$X3" "$AD $K:$T,$R $X3G $F" gain -n "$O"
     
     done
   
