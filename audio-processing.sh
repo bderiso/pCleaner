@@ -4,7 +4,7 @@
 set -e
 
 # Debug Mode
-#set -x
+set -x
 
 # Check dependecies & install if needed
 if [ ! -z $(command -v faad) ];
@@ -64,10 +64,11 @@ fi
 
 # Send files within the input directory through the audio processing 
 # then loop until the list is finished
-for INFILE in "$IN_DIR"/*; do
+#for INFILE in "$IN_DIR"/**; do
+find "$IN_DIR"/ -type f | while IFS=$'\n' read -r INFILE; do
 
 #  # Skip directories
-  if [ -f "$INFILE" ]; then  
+#  if [ -f "$INFILE" ]; then  
 
     # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
     # If the file is M4A, it will be converted to WAV using faad and then restart the script
@@ -102,6 +103,5 @@ for INFILE in "$IN_DIR"/*; do
       ./feed-processing.sh
     fi
 
-  fi
-
+#  fi
 done
