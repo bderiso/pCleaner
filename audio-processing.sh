@@ -44,11 +44,6 @@ if [ ! -e "$FX" ]; then
   cp ./pCleaner-settings.template "$FX"
 fi
 
-# Check if this script is running on MacOS, and if so then clean up the Input Directory 
-if [ $(uname -s) = Darwin ]; then
-  find "$IN_DIR" -type f -name "/.DS_Store" -delete
-fi
-
 # Check if any new files have been downloaded; if zero then exit
 ## List the directory and makes sure to append '/' to nested directories in the list
 ## then exclude those directories.
@@ -65,6 +60,7 @@ fi
 find "$IN_DIR"/ \
   -type f \
   -a ! -name "*.tmp" \
+  -a ! -name ".DS_Store" \
   | while IFS=$'\n' read -r INFILE; do
 
   # Check if the file has been processed before
