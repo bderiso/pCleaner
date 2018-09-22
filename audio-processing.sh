@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Exit on error
-#set -e
-
 # Debug Mode
 #set -x
+
+# Exit on error
+#set -e
 
 # Check dependecies & install if needed
 if [ ! -z $(command -v faad) ];
@@ -59,10 +59,13 @@ else
   exit 0
 fi
 
-# Send files within the input directory through the audio processing 
+# Send audio files within the input directory through the audio processing 
 # then loop until the list is finished
 
-  find "$IN_DIR"/ -type f ! -name "*.tmp" | while IFS=$'\n' read -r INFILE; do
+find "$IN_DIR"/ \
+  -type f \
+  -a ! -name "*.tmp" \
+  | while IFS=$'\n' read -r INFILE; do
 
   # Check if the file has been processed before
   if fgrep $(md5 -q "$INFILE") "$FILE_DB"; then
@@ -96,7 +99,18 @@ fi
     # This is where the magic happens
     source ~/pCleaner-settings
   
-    "$SOX" -V -t "$INFILE_FORMAT" "$INFILE".tmp --comment "$G" "$OUTFILE" highpass "$HP" lowpass "$LP" mcompand "$AD $K:$T,$R $X1G $F" "$X1" "$AD $K:$T,$R $X1G $F" "$X2" "$AD $K:$T,$R $X2G $F" "$X3" "$AD $K:$T,$R $X3G $F" gain -n "$O"
+    "$SOX" -V \
+    "~/Desktop/pCleaner Stinger/pCleaner Stinger.wav" \
+    -t "$INFILE_FORMAT" "$INFILE".tmp \
+    --comment "$G" \
+    "$OUTFILE" \
+    highpass "$HP" \
+    lowpass "$LP" \
+    mcompand "$AD $K:$T,$R $X1G $F" \
+      "$X1" "$AD $K:$T,$R $X1G $F" \
+      "$X2" "$AD $K:$T,$R $X2G $F" \
+      "$X3" "$AD $K:$T,$R $X3G $F" \
+    gain -n "$O"
   
   done
 
