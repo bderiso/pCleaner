@@ -102,7 +102,6 @@ NEW_FILES | while IFS=$'\n' read -r INFILE; do MD5_CHECK
     source ~/pCleaner-settings
   
     "$SOX" -V \
-    "~/Desktop/pCleaner Stinger/pCleaner Stinger.wav" \
     -t "$INFILE_FORMAT" "$INFILE".tmp \
     --comment "$G" \
     "$OUTFILE" \
