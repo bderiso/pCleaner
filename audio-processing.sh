@@ -48,7 +48,7 @@ fi
 
 if [ ! -e "$FX" ]; then
   echo "Generating the audio settings file: $FX"
-  cp ./pCleaner-settings.template "$FX"
+  cp ~/pCleaner/pCleaner-settings.template "$FX"
 fi
 
 # Checks if any new files have been downloaded
