@@ -64,7 +64,7 @@ find "$IN_DIR"/ \
   | while IFS=$'\n' read -r INFILE; do
 
   # Check if the file has been processed before
-  if fgrep $(md5 -q "$INFILE") "$FILE_DB"; then
+  if fgrep --silent $(md5 -q "$INFILE") "$FILE_DB"; then
     continue
   fi
 
@@ -111,7 +111,7 @@ find "$IN_DIR"/ \
   done
 
   # Prevent future runs against the same file
-  echo $(md5 -q "$OUTFILE") "$OUTFILE" | tee -a "$FILE_DB"
+  echo "$(date -u): $(md5 -q $OUTFILE) - $OUTFILE" >> "$FILE_DB"
 
   if [ -e ./feed-processing.sh ]; then
     ./feed-processing.sh
