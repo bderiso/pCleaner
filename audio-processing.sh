@@ -1,10 +1,8 @@
 #!/bin/bash
 
-# Debug Mode
-#set -x
+# Debug Mode & Exit on error
+set -xe
 
-# Exit on error
-#set -e
 
 # Log the current date, time & user
 if [  $USER = root  ]; then
@@ -13,50 +11,55 @@ else
   echo "$(date -u): Script started manually by $USER."
 fi
 
+
+## Presets & dependencies
+INPUT_DIRECTORY=/usr/share/pCleaner-Input
+OUTPUT_DIRECTORY=/usr/share/pCleaner-Output
+FX=/etc/opt/pCleaner-settings
+FILE_DB=/var/log/pCleaner-DB
+
 # Check dependecies & install if needed
-if [ ! -z $(command -v faad) ];
- then echo;
- else echo "faad not installed, we will install it now.";
- brew install faad2;
-fi
+# then create an UPPERCASE variable for their installed path
+# Example: SOX=/usr/local/bin/sox
+for DEPENDENCY in \
+brew \
+sox \
+faad \
+; do
+  if [ -z $(command -v "$DEPENDENCY") ]; then
+    echo ""$DEPENDENCY" is not installed; we will install it now.";
+    brew install "$DEPENDENCY";
+  else
+    export $(echo "$DEPENDENCY"  | tr '[:lower:]' '[:upper:]')=$(command -v "$DEPENDENCY")
+  fi
+done
 
-if [ ! -z $(command -v sox) ];
- then echo;
- else echo "sox not installed, we will install it now.";
- brew install sox;
-fi
+# Check that preset files &  directories exist; if not then make them
+for PRESET in \
+"$INPUT_DIRECTORY" \
+"$OUTPUT_DIRECTORY" \
+; do
+  if [ -d "$PRESET" ]; then
+    continue
+  else
+    echo "Presetting: $PRESET"
+    mkdir -p "$PRESET"
+  fi
+done
 
-# Find & variablize the installed path for dependecies
-FAAD=$(command -v faad)
-SOX=$(command -v sox)
-
-# Setting locations
-# Input directory
-IN_DIR=~/pCleaner-Input
-# Output directory
-OUT_DIR=~/pCleaner-Output
-# Audio Settings
-FX=~/pCleaner-settings
-# Processing History Database
-FILE_DB=~/pCleaner-DB
-
-# Check that IN_DIR, OUT_DIR & FX exist; if not then make them
-if [ ! -e "$IN_DIR" ]; then
-  echo "Creating the input directory: $IN_DIR"
-  mkdir -p "$IN_DIR"
-fi
-
-if [ ! -e "$FX" ]; then
+if [ -f "$FX" ]; then
+  continue
+else
   echo "Generating the audio settings file: $FX"
-  cp ~/pCleaner/pCleaner-settings.template "$FX"
+  rsync -a $(dirname $(find $(pwd -P) -type f -name "$0" -print -quit))/pCleaner-settings $(dirname "$FX")/
 fi
 
 # Checks if any new files have been downloaded
 # If so, sends them through the audio engine
 # then loop until the list is finished
 
-NEW_FILES () {
-  find "$IN_DIR"/ \
+LIST_NEW_FILES () {
+  find "$INPUT_DIRECTORY"/ \
     -type f \
     -a ! -name "*.tmp" \
     -a ! -name ".DS_Store"
@@ -65,14 +68,10 @@ NEW_FILES () {
 MD5_CHECK () {
   if fgrep --silent $(md5 -q "$INFILE") "$FILE_DB"; then
     continue
-## Currently deprecated; the previous grep should never return empty. This needs to be inverted or something.
-#  else
-#    echo "$(date -u): No new files found."
-#    exit 0
   fi
 }
 
-NEW_FILES | while IFS=$'\n' read -r INFILE; do MD5_CHECK
+LIST_NEW_FILES | while IFS=$'\n' read -r INFILE; do MD5_CHECK
 
   # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
   # If the file is M4A, it will be converted to WAV using faad and then restart the script
@@ -82,7 +81,7 @@ NEW_FILES | while IFS=$'\n' read -r INFILE; do MD5_CHECK
   if [ "$INFILE_FORMAT" = m4a ]; then
     echo "Unsupported format: m4a. File will be converted."
     "$FAAD" -q "$INFILE"
-    rsync --remove-source-files "$INFILE" "$IN_DIR"/archive/
+    rsync --remove-source-files "$INFILE" "$INFILE"tmp
     exec "$0"
   fi
 
@@ -96,7 +95,7 @@ NEW_FILES | while IFS=$'\n' read -r INFILE; do MD5_CHECK
 
     echo "$(date -u):"
 
-  cp "$INFILE" "$INFILE".tmp
+  rsync "$INFILE" "$INFILE".tmp
 
     # This is where the magic happens
     source ~/pCleaner-settings
