@@ -6,6 +6,13 @@
 # Exit on error
 #set -e
 
+# Log the current date, time & user
+if [  $USER = root  ]; then
+  echo "$(date -u): Script started automatically by CRON."
+else
+  echo "$(date -u): Script started manually by $USER."
+fi
+
 # Check dependecies & install if needed
 if [ ! -z $(command -v faad) ];
  then echo;
@@ -27,7 +34,7 @@ SOX=$(command -v sox)
 # Input directory
 IN_DIR=~/pCleaner-Input
 # Output directory
-#OUT_DIR=~/pCleaner-Output
+OUT_DIR=~/pCleaner-Output
 # Audio Settings
 FX=~/pCleaner-settings
 # Processing History Database
@@ -44,29 +51,28 @@ if [ ! -e "$FX" ]; then
   cp ./pCleaner-settings.template "$FX"
 fi
 
-# Check if any new files have been downloaded; if zero then exit
-## List the directory and makes sure to append '/' to nested directories in the list
-## then exclude those directories.
-## If no files were listed, then exit with a message
-if ls -p $IN_DIR | egrep -v /$ > /dev/null; then : nothing; 
-else
-  echo "$(date -u): No new files found in $IN_DIR"
-  exit 0
-fi
-
-# Send audio files within the input directory through the audio processing 
+# Checks if any new files have been downloaded
+# If so, sends them through the audio engine
 # then loop until the list is finished
 
-find "$IN_DIR"/ \
-  -type f \
-  -a ! -name "*.tmp" \
-  -a ! -name ".DS_Store" \
-  | while IFS=$'\n' read -r INFILE; do
+NEW_FILES () {
+  find "$IN_DIR"/ \
+    -type f \
+    -a ! -name "*.tmp" \
+    -a ! -name ".DS_Store"
+}
 
-  # Check if the file has been processed before
+MD5_CHECK () {
   if fgrep --silent $(md5 -q "$INFILE") "$FILE_DB"; then
     continue
+## Currently deprecated; the previous grep should never return empty. This needs to be inverted or something.
+#  else
+#    echo "$(date -u): No new files found."
+#    exit 0
   fi
+}
+
+NEW_FILES | while IFS=$'\n' read -r INFILE; do MD5_CHECK
 
   # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
   # If the file is M4A, it will be converted to WAV using faad and then restart the script
