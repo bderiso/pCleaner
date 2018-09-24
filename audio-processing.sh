@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Debug Mode & Exit on error
-set -xe
+#set -xe
 
 
 # Log the current date, time & user
@@ -47,11 +47,13 @@ for PRESET in \
   fi
 done
 
-if [ -f "$FX" ]; then
-  continue
-else
+if [ ! -f "$FX" ]; then
   echo "Generating the audio settings file: $FX"
   rsync -a $(dirname $(find $(pwd -P) -type f -name "$0" -print -quit))/pCleaner-settings $(dirname "$FX")/
+fi
+
+if [ ! -f "$FILE_DB" ]; then
+  touch "$FILE_DB"
 fi
 
 # Checks if any new files have been downloaded
@@ -71,7 +73,7 @@ MD5_CHECK () {
   fi
 }
 
-LIST_NEW_FILES | while IFS=$'\n' read -r INFILE; do MD5_CHECK
+LIST_NEW_FILES | while IFS=$'\n' read -r "INFILE"; do MD5_CHECK
 
   # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
   # If the file is M4A, it will be converted to WAV using faad and then restart the script
@@ -92,8 +94,6 @@ LIST_NEW_FILES | while IFS=$'\n' read -r INFILE; do MD5_CHECK
   OUTFILE_FORMAT_LIST='mp3'
   for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
     OUTFILE="$OUTFILE_PATH/$OUTFILE_NAME.$OUTFILE_FORMAT"
-
-    echo "$(date -u):"
 
   rsync "$INFILE" "$INFILE".tmp
 
