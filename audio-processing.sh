@@ -38,11 +38,17 @@ for PRESET in \
 "$OUTPUT_DIRECTORY" \
 "$FILE_DB" \
 ; do
-  if [ ! -d "$PRESET" ]; then
+  if [ -e "$PRESET" ]; then
+    true
+  else
     echo "Presetting: $PRESET"
-    mkdir -p "$PRESET"
-  elif [ ! -f "$PRESET" ]; then
-    touch "$PRESET"
+    # Check if $PRESET has a trailing forward-slash, if so assume it's a directory
+    # otherwise assume it's a file
+    if egrep "^.*\/$" <<< "$PRESET"; then
+      mkdir -p "$PRESET"
+    else
+      touch "$PRESET"
+    fi
   fi
 done
 
