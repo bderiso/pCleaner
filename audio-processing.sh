@@ -11,8 +11,8 @@ else
 fi
 
 # Presets & dependencies
-INPUT_DIRECTORY=/usr/share/pCleaner-Input
-OUTPUT_DIRECTORY=/usr/share/pCleaner-Output
+INPUT_DIRECTORY=/usr/share/pCleaner-Input/
+OUTPUT_DIRECTORY=/usr/share/pCleaner-Output/
 FX=/etc/opt/pCleaner-settings
 FILE_DB=/var/log/pCleaner-DB
 
@@ -60,7 +60,7 @@ fi
 # then loop until the list is finished
 
 LIST_NEW_FILES () {
-  find "$INPUT_DIRECTORY"/ \
+  find "$INPUT_DIRECTORY" \
     -type f \
     -a ! -name "*.tmp" \
     -a ! -name ".DS_Store"
