@@ -78,6 +78,14 @@ MD5_CHECK () {
   fi
 }
 
+LOG_INFILE () {
+  echo $(date -u): $(md5 -q "$INFILE") - "$INFILE" >> "$FILE_DB"
+}
+
+LOG_OUTFILE () {
+  echo $(date -u): $(md5 -q "$OUTFILE") - "$OUTFILE" >> "$FILE_DB"
+}
+
 LIST_NEW_FILES | while IFS=$'\n' read -r "INFILE"; do 
   MD5_CHECK
 
@@ -90,6 +98,7 @@ LIST_NEW_FILES | while IFS=$'\n' read -r "INFILE"; do
     echo "Unsupported format: m4a. File will be converted."
     "$FAAD" -q "$INFILE"
     rsync --remove-source-files "$INFILE" "$INFILE"tmp
+    LOG_INFILE
     exec "$0"
   fi
 
@@ -121,7 +130,7 @@ LIST_NEW_FILES | while IFS=$'\n' read -r "INFILE"; do
   done
 
   # Prevent future runs against the same file
-  echo "$(date -u): $(md5 -q $OUTFILE) - $OUTFILE" >> "$FILE_DB"
+  LOG_OUTFILE
 
   if [ -e ./feed-processing.sh ]; then
     ./feed-processing.sh
