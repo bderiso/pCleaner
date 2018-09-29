@@ -3,7 +3,6 @@
 # Debug Mode & Exit on error
 #set -xe
 
-
 # Log the current date, time & user
 if [  $USER = root  ]; then
   echo "$(date -u): Script started automatically by CRON."
@@ -11,8 +10,7 @@ else
   echo "$(date -u): Script started manually by $USER."
 fi
 
-
-## Presets & dependencies
+# Presets & dependencies
 INPUT_DIRECTORY=/usr/share/pCleaner-Input
 OUTPUT_DIRECTORY=/usr/share/pCleaner-Output
 FX=/etc/opt/pCleaner-settings
@@ -34,16 +32,17 @@ faad \
   fi
 done
 
-# Check that preset files &  directories exist; if not then make them
+# Check if preset files & directories exist; if not then make them
 for PRESET in \
 "$INPUT_DIRECTORY" \
 "$OUTPUT_DIRECTORY" \
+"$FILE_DB" \
 ; do
-  if [ -d "$PRESET" ]; then
-    continue
-  else
+  if [ ! -d "$PRESET" ]; then
     echo "Presetting: $PRESET"
     mkdir -p "$PRESET"
+  elif [ ! -f "$PRESET" ]; then
+    touch "$PRESET"
   fi
 done
 
@@ -52,9 +51,9 @@ if [ ! -f "$FX" ]; then
   rsync -a $(dirname $(find $(pwd -P) -type f -name "$0" -print -quit))/pCleaner-settings $(dirname "$FX")/
 fi
 
-if [ ! -f "$FILE_DB" ]; then
-  touch "$FILE_DB"
-fi
+#if [ ! -f "$FILE_DB" ]; then
+#  touch "$FILE_DB"
+#fi
 
 # Checks if any new files have been downloaded
 # If so, sends them through the audio engine
@@ -73,7 +72,8 @@ MD5_CHECK () {
   fi
 }
 
-LIST_NEW_FILES | while IFS=$'\n' read -r "INFILE"; do MD5_CHECK
+LIST_NEW_FILES | while IFS=$'\n' read -r "INFILE"; do 
+  MD5_CHECK
 
   # Check the format of the file, if it is M4A then it will need to be converted due ot a limitation with sox
   # If the file is M4A, it will be converted to WAV using faad and then restart the script
@@ -88,14 +88,14 @@ LIST_NEW_FILES | while IFS=$'\n' read -r "INFILE"; do MD5_CHECK
   fi
 
   OUTFILE_PATH=$(dirname "$INFILE")
-    OUTFILE_NAME="${INFILE_NAME%.*}"
+  OUTFILE_NAME="${INFILE_NAME%.*}"
 
   # Automatic handling of output formats from a space delimited list
   OUTFILE_FORMAT_LIST='mp3'
   for OUTFILE_FORMAT in $OUTFILE_FORMAT_LIST; do
     OUTFILE="$OUTFILE_PATH/$OUTFILE_NAME.$OUTFILE_FORMAT"
 
-  rsync "$INFILE" "$INFILE".tmp
+    rsync "$INFILE" "$INFILE".tmp
 
     # This is where the magic happens
     source ~/pCleaner-settings
