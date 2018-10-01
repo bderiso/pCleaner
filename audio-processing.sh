@@ -3,18 +3,12 @@
 # Debug Mode & Exit on error
 #set -xe
 
-# Log the current date, time & user
-if [  $USER = root  ]; then
-  echo "$(date -u): Script started automatically by CRON."
-else
-  echo "$(date -u): Script started manually by $USER."
-fi
-
 # Presets & dependencies
 INPUT_DIRECTORY=/usr/share/pCleaner-Input/
 OUTPUT_DIRECTORY=/usr/share/pCleaner-Output/
 FX=/etc/opt/pCleaner-settings
-FILE_DB=/var/log/pCleaner-DB
+FILE_DB=/var/log/pCleaner/DB
+LOG_FILE=/var/log/pCleaner/$(basename ${0%.*}).log
 
 # Check dependecies & install if needed
 # then create an UPPERCASE variable for their installed path
@@ -37,6 +31,7 @@ for PRESET in \
 "$INPUT_DIRECTORY" \
 "$OUTPUT_DIRECTORY" \
 "$FILE_DB" \
+"$LOG_FILE" \
 ; do
   if [ -e "$PRESET" ]; then
     true
@@ -60,6 +55,13 @@ fi
 #if [ ! -f "$FILE_DB" ]; then
 #  touch "$FILE_DB"
 #fi
+
+# Append standard & error output to the log
+exec >> "$LOG_FILE"
+exec 2>&1
+
+# Log the current date, time & user
+echo "$(date -u): Script started by $USER."
 
 # Checks if any new files have been downloaded
 # If so, sends them through the audio engine
